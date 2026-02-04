@@ -1,164 +1,114 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prefeito da Cidade</title>
-
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #121212;
-    color: white;
-}
-
-.painel {
-    padding: 10px;
-    background: #1e1e1e;
-    position: fixed;
-    width: 100%;
-    z-index: 10;
-    font-size: 14px;
-}
-
-button {
-    margin: 3px;
-    padding: 7px;
-    border: none;
-    border-radius: 6px;
-}
-
-.casa { background: #4CAF50; }
-.hospital { background: #2196F3; }
-.delegacia { background: #f44336; }
-.veiculo { background: #FF9800; }
-
-.mapa-container {
-    position: absolute;
-    top: 110px;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    overflow: hidden;
-    touch-action: none;
-}
-
-.mapa {
-    display: grid;
-    grid-template-columns: repeat(20, 60px);
-    grid-auto-rows: 60px;
-    gap: 2px;
-    position: absolute;
-    transform-origin: 0 0;
-}
-
-.bloco {
-    background: #2e2e2e;
-    border-radius: 4px;
-    font-size: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.estrada {
-    background: #555;
-    font-size: 18px;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>Slot Simples com Bônus</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        .slot-machine {
+            display: inline-block;
+            margin-top: 50px;
+        }
+        .reel {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            border: 2px solid #333;
+            margin: 0 5px;
+            line-height: 100px;
+            font-size: 50px;
+            background-color: white;
+            transition: transform 0.5s ease-in-out;
+        }
+        #spin-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="painel">
-💰 <span id="dinheiro">1000</span> |
-👨‍👩‍👧‍👦 <span id="moradores">20</span> |
-😊 <span id="felicidade">50</span>%<br>
+    <div class="slot-machine">
+        <div class="reel" id="reel1">🐯</div>
+        <div class="reel" id="reel2">🥇</div>
+        <div class="reel" id="reel3">🂡</div>
+    </div>
 
-<button class="casa" onclick="selecionar('🏠',200)">Casa</button>
-<button class="hospital" onclick="selecionar('🏥',800)">Hospital</button>
-<button class="delegacia" onclick="selecionar('🚓',600)">Delegacia</button>
-<button class="veiculo" onclick="selecionar('🚗',300)">Transporte</button>
-<button onclick="zoomIn()">＋</button>
-<button onclick="zoomOut()">－</button>
-</div>
+    <button id="spin-button">Girar</button>
 
-<div class="mapa-container" id="container">
-  <div class="mapa" id="mapa"></div>
-</div>
+    <script>
+        const symbols = ['🐯', '🥇', '🂡', '🍀', '🎁'];
+        let credit = 10; // crédito inicial
 
-<script>
-const linhas = 20, colunas = 20;
-let dinheiro = 1000, moradores = 20, felicidade = 50;
-let selecionado = null, custoSelecionado = 0;
-let cidade = [];
+        const spinButton = document.getElementById('spin-button');
+        const reels = [
+            document.getElementById('reel1'),
+            document.getElementById('reel2'),
+            document.getElementById('reel3')
+        ];
 
-const mapa = document.getElementById("mapa");
+        spinButton.addEventListener('click', () => {
+            spinButton.disabled = true; // Desabilita o botão enquanto gira
 
-/* ---------- MAPA ---------- */
-function criarMapa() {
-    mapa.innerHTML = "";
-    cidade.forEach((item, i) => {
-        const bloco = document.createElement("div");
-        bloco.className = "bloco" + (item === "🛣️" ? " estrada" : "");
-        bloco.textContent = item;
-        bloco.onclick = () => construir(i);
-        mapa.appendChild(bloco);
-    });
-}
+            // Adiciona animação de rotação
+            reels.forEach((reel, index) => {
+                setTimeout(() => {
+                    reel.style.transform = `rotateY(${360 * (index + 1)}deg)`;
+                }, index * 100);
+            });
 
-/* ---------- CONSTRUÇÃO ---------- */
-function selecionar(icone, custo) {
-    selecionado = icone;
-    custoSelecionado = custo;
-}
+            // Girar os rolos aleatoriamente após a animação
+            setTimeout(() => {
+                reels.forEach(reel => {
+                    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    reel.textContent = randomSymbol;
+                    reel.style.transform = 'rotateY(0deg)'; // Resetar a rotação
+                });
 
-function construir(i) {
-    if (!selecionado || cidade[i] !== "" || dinheiro < custoSelecionado) return;
+                // Verificar resultado e bônus
+                checkResults();
 
-    cidade[i] = selecionado;
-    dinheiro -= custoSelecionado;
+                // Reabilitar o botão após a animação
+                spinButton.disabled = false;
+            }, 600); // Tempo total da animação
+        });
 
-    if (selecionado === "🏠") moradores += 5;
-    if (selecionado === "🏥") felicidade += 5;
-    if (selecionado === "🚓") felicidade += 3;
-    if (selecionado === "🚗") felicidade += 2;
+        function checkResults() {
+            const reelValues = reels.map(reel => reel.textContent);
+            let win = false;
+            let bonus = false;
 
-    criarEstradas(i);
-    salvarJogo();
-    atualizarTela();
-    criarMapa();
-}
+            // Exemplo de lógica: se todos os rolos forem iguais, ganha
+            if (reelValues.every(symbol => symbol === reelValues[0])) {
+                win = true;
+                credit += 5; // Ganho padrão
+            } else {
+                credit -= 1; // Perda padrão
+            }
 
-/* ---------- ESTRADAS ---------- */
-function criarEstradas(i) {
-    const vizinhos = [
-        i - colunas, // cima
-        i + colunas, // baixo
-        i - 1,       // esquerda
-        i + 1        // direita
-    ];
+            // Chance aleatória de bônus
+            if (Math.random() < 0.1) { // 10% de chance
+                bonus = true;
+                credit += 10; // Bônus extra
+                alert('Bônus liberado! +10 créditos!');
+            }
 
-    vizinhos.forEach(v => {
-        if (cidade[v] && cidade[v] !== "" && cidade[v] !== "🛣️") {
-            const meio = Math.floor((i + v) / 2);
-            if (cidade[meio] === "") cidade[meio] = "🛣️";
+            if (win) {
+                alert('Você ganhou! +5 créditos!');
+            } else {
+                alert('Você perdeu! -1 crédito.');
+            }
+
+            // Mostrar o crédito atual no console
+            console.log('Crédito atual:', credit);
         }
-    });
-}
+    </script>
 
-/* ---------- SAVE AUTOMÁTICO ---------- */
-function salvarJogo() {
-    localStorage.setItem("cidadeSave", JSON.stringify({
-        dinheiro, moradores, felicidade, cidade
-    }));
-}
-
-function carregarJogo() {
-    const save = JSON.parse(localStorage.getItem("cidadeSave"));
-    if (save) {
-        dinheiro = save.dinheiro;
-        moradores = save.moradores;
-        felicidade = save.felicidade;
-        cidade = save.cidade;
+</body>
+</html>
+``
